@@ -111,12 +111,23 @@ class FaultDetector:
     
     def detect_faults(self, algorithm, data):
         """检测故障"""
-        if algorithm not in self.scalers:
+        # 算法名称映射
+        algorithm_mapping = {
+            "隔离森林": "isolation_forest",
+            "单类SVM": "one_class_svm",
+            "基于规则": "rule_based"
+        }
+        
+        algorithm_key = algorithm_mapping.get(algorithm, algorithm)
+        
+        if algorithm_key not in self.scalers and algorithm_key != "rule_based":
             # 训练模型
             if algorithm == "隔离森林":
                 self.train(data)
+                self.scalers[algorithm_key] = self.model
             elif algorithm == "单类SVM":
-                self.train_one_class_svm(data)
+                model = self.train_one_class_svm(data)
+                self.scalers[algorithm_key] = model
             elif algorithm == "基于规则":
                 self.train_rule_based(data)
         
@@ -125,7 +136,7 @@ class FaultDetector:
         if algorithm == "基于规则":
             return self._rule_based_detection(df)
         else:
-            return self._anomaly_detection_detection(df, feature_columns, algorithm)
+            return self._anomaly_detection_detection(df, feature_columns, algorithm, algorithm_key)
     
     def _rule_based_detection(self, df):
         """基于规则的故障检测"""
@@ -172,21 +183,25 @@ class FaultDetector:
         
         return faults
     
-    def _anomaly_detection_detection(self, df, feature_columns, algorithm):
+    def _anomaly_detection_detection(self, df, feature_columns, algorithm, algorithm_key):
         """异常检测算法检测"""
-        scaler = self.scalers[algorithm]
-        
         X = df[feature_columns]
-        X_scaled = scaler.transform(X)
         
         if algorithm == "隔离森林":
             # 隔离森林返回-1表示异常，1表示正常
-            predictions = self.model.predict(X_scaled)
-            anomaly_scores = self.model.decision_function(X_scaled)
+            model = self.scalers[algorithm_key]
+            predictions = model.predict(X)
+            anomaly_scores = model.decision_function(X)
         elif algorithm == "单类SVM":
+            # 确保有对应的scaler
+            if algorithm_key not in self.scalers:
+                self.train_one_class_svm(df)
+            
+            model = self.scalers[algorithm_key]
+            X_scaled = self.scalers['one_class_svm'].transform(X)
             # SVM返回-1表示异常，1表示正常
-            predictions = self.scalers[algorithm].predict(X_scaled)
-            anomaly_scores = self.scalers[algorithm].decision_function(X_scaled)
+            predictions = model.predict(X_scaled)
+            anomaly_scores = model.decision_function(X_scaled)
         
         faults = []
         for idx, (pred, score) in enumerate(zip(predictions, anomaly_scores)):
