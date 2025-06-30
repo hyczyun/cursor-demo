@@ -443,46 +443,32 @@ class HVACDemoPlatform:
     
     def fault_detection_demo(self):
         st.header("🔍 故障诊断算法演示")
-        
         col1, col2 = st.columns([2, 1])
-        
+        detection_results = None  # 初始化，避免 UnboundLocalError
         with col1:
             st.subheader("故障检测")
-            
-            # 检测算法选择
             detection_algorithm = st.selectbox(
                 "选择检测算法",
                 ["隔离森林", "自编码器", "One-Class SVM", "LSTM异常检测"]
             )
-            
-            # 生成检测数据
             detection_data = self.data_generator.generate_detection_data()
-            
-            # 运行故障检测
             if st.button("运行故障检测"):
                 with st.spinner("正在检测..."):
-                    # 模拟检测过程
                     progress_bar = st.progress(0)
                     for i in range(100):
                         time.sleep(0.01)
                         progress_bar.progress(i + 1)
-                    
-                    # 获取检测结果
                     detection_results = self.fault_detector.detect(
                         algorithm=detection_algorithm,
                         data=detection_data
                     )
-                    
                     st.success("检测完成！")
-                    
                     # 显示检测结果
                     fig = make_subplots(
                         rows=2, cols=1,
                         subplot_titles=('传感器数据', '异常检测结果'),
                         vertical_spacing=0.1
                     )
-                    
-                    # 传感器数据
                     fig.add_trace(
                         go.Scatter(
                             x=detection_data['timestamp'],
@@ -493,7 +479,6 @@ class HVACDemoPlatform:
                         ),
                         row=1, col=1
                     )
-                    
                     fig.add_trace(
                         go.Scatter(
                             x=detection_data['timestamp'],
@@ -505,11 +490,8 @@ class HVACDemoPlatform:
                         ),
                         row=1, col=1
                     )
-                    
-                    # 异常检测结果
                     colors = ['green' if not anomaly else 'red' 
                              for anomaly in detection_results['anomalies']]
-                    
                     fig.add_trace(
                         go.Scatter(
                             x=detection_data['timestamp'],
@@ -520,46 +502,36 @@ class HVACDemoPlatform:
                         ),
                         row=2, col=1
                     )
-                    
                     fig.update_layout(height=600)
                     st.plotly_chart(fig, use_container_width=True)
-        
         with col2:
             st.subheader("检测结果")
-            
-            # 显示检测统计
-            total_points = len(detection_results['anomalies'])
-            anomaly_count = sum(detection_results['anomalies'])
-            anomaly_rate = (anomaly_count / total_points) * 100
-            
-            st.metric("检测点数", total_points)
-            st.metric("异常点数", anomaly_count)
-            st.metric("异常率", f"{anomaly_rate:.2f}%")
-            
-            # 故障类型分析
-            if anomaly_count > 0:
-                st.subheader("故障类型分析")
-                
-                fault_types = {
-                    "传感器故障": 0.4,
-                    "设备磨损": 0.3,
-                    "控制异常": 0.2,
-                    "环境因素": 0.1
-                }
-                
-                for fault_type, probability in fault_types.items():
-                    st.progress(probability)
-                    st.write(f"{fault_type}: {probability*100:.1f}%")
-            
-            st.subheader("维护建议")
-            st.warning("""
-            **检测到异常，建议**:
-            
-            1. 检查传感器连接
-            2. 清洁设备部件
-            3. 校准控制系统
-            4. 联系技术人员
-            """)
+            if detection_results is not None:
+                total_points = len(detection_results['anomalies'])
+                anomaly_count = sum(detection_results['anomalies'])
+                anomaly_rate = (anomaly_count / total_points) * 100
+                st.metric("检测点数", total_points)
+                st.metric("异常点数", anomaly_count)
+                st.metric("异常率", f"{anomaly_rate:.2f}%")
+                if anomaly_count > 0:
+                    st.subheader("故障类型分析")
+                    fault_types = {
+                        "传感器故障": 0.4,
+                        "设备磨损": 0.3,
+                        "控制异常": 0.2,
+                        "环境因素": 0.1
+                    }
+                    for fault_type, probability in fault_types.items():
+                        st.progress(probability)
+                        st.write(f"{fault_type}: {probability*100:.1f}%")
+                st.subheader("维护建议")
+                st.warning("""
+                **检测到异常，建议**:
+                1. 检查传感器连接
+                2. 清洁设备部件
+                3. 校准控制系统
+                4. 联系技术人员
+                """)
     
     def temperature_control_demo(self):
         st.header("🌡️ 温度控制算法演示")
