@@ -117,13 +117,64 @@ class TemperatureController:
         
         return control_output
     
-    def simulate(self, target_temp, steps=50):
+    def simulate(self, algorithm, target_temp, kp=2.0, ki=0.1, kd=0.05, steps=50):
+        """模拟温度控制过程"""
+        # 初始化
         temps = [np.random.uniform(18, 28)]
-        for _ in range(steps-1):
-            last = temps[-1]
-            error = target_temp - last
-            temps.append(last + 0.2 * error + np.random.normal(0, 0.2))
-        return temps
+        control_signals = [0.0]
+        time_points = list(range(steps))
+        
+        # 更新PID参数
+        self.pid_params = {'kp': kp, 'ki': ki, 'kd': kd}
+        
+        # 重置积分和微分项
+        self.integral = 0
+        self.prev_error = 0
+        
+        for i in range(1, steps):
+            current_temp = temps[-1]
+            error = target_temp - current_temp
+            
+            # 根据算法选择控制方法
+            if algorithm == "PID控制":
+                control_signal = self.pid_control(error)
+            elif algorithm == "模糊控制":
+                error_rate = (error - self.prev_error) if i > 1 else 0
+                control_signal = self.fuzzy_control(error, error_rate)
+            elif algorithm == "神经网络控制":
+                # 简化的神经网络控制
+                temp_rate = (current_temp - temps[-2]) if i > 1 else 0
+                state = [current_temp, target_temp, temp_rate, i]
+                control_signal = self.neural_network_control(state)
+            elif algorithm == "自适应控制":
+                # 简化的自适应控制
+                system_gain = 0.2
+                control_signal = self.adaptive_control(error, system_gain)
+            else:
+                # 默认PID控制
+                control_signal = self.pid_control(error)
+            
+            # 限制控制信号范围
+            control_signal = np.clip(control_signal, -10, 10)
+            
+            # 更新温度（简化的系统模型）
+            temp_change = 0.2 * control_signal + np.random.normal(0, 0.1)
+            new_temp = current_temp + temp_change
+            
+            # 限制温度范围
+            new_temp = np.clip(new_temp, 15, 35)
+            
+            temps.append(new_temp)
+            control_signals.append(control_signal)
+        
+        # 返回结果字典
+        return {
+            'time': time_points,
+            'temperature': temps,
+            'control_signal': control_signals,
+            'target_temp': target_temp,
+            'algorithm': algorithm
+        }
     
     def calculate_settling_time(self, temperature_history, target_temp, tolerance=0.1):
         """计算调节时间"""
