@@ -21,7 +21,8 @@ class HVACDataGenerator:
             'air_quality': np.random.choice(['优', '良', '一般']),
             'compressor_frequency': np.random.uniform(30, 70),
             'water_flow': np.random.uniform(20, 100),
-            'condenser_pressure': np.random.uniform(0.5, 2.0)
+            'condenser_pressure': np.random.uniform(0.5, 2.0),
+            'evaporator_pressure': np.random.uniform(0.2, 1.0)
         }
     
     def generate_historical_data(self, hours=24):
