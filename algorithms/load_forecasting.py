@@ -127,6 +127,7 @@ class LoadForecaster:
     
     def predict(self, algorithm, data, hours=24):
         """进行预测"""
+        import numpy as np  # 确保 np 可用
         # 直接根据 algorithm 判断并训练模型
         if algorithm == "LSTM神经网络":
             self.train_lstm_simulation(data)
