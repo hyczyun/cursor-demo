@@ -452,20 +452,20 @@ class HVACDemoPlatform:
                     for i in range(100):
                         time.sleep(0.01)
                         progress_bar.progress(i + 1)
-                    detection_results = self.fault_detector.detect_faults(
+                    raw_results = self.fault_detector.detect_faults(
                         algorithm=detection_algorithm,
                         data=detection_data
                     )
                     st.success("检测完成！")
                     
                     # 显示检测结果
-                    if detection_results:
+                    if raw_results:
                         # 创建异常标记数组
                         anomalies = [False] * len(detection_data)
                         scores = [0.0] * len(detection_data)
                         
                         # 根据检测结果标记异常
-                        for fault in detection_results:
+                        for fault in raw_results:
                             if 'timestamp' in fault:
                                 # 找到对应的时间戳索引
                                 for i, ts in enumerate(detection_data['timestamp']):
@@ -519,14 +519,21 @@ class HVACDemoPlatform:
                         detection_results = {
                             'anomalies': anomalies,
                             'scores': scores,
-                            'faults': detection_results
+                            'faults': raw_results
+                        }
+                    else:
+                        # 如果没有检测结果，创建默认结果
+                        detection_results = {
+                            'anomalies': [False] * len(detection_data),
+                            'scores': [0.0] * len(detection_data),
+                            'faults': []
                         }
         with col2:
             st.subheader("检测结果")
-            if detection_results is not None:
+            if detection_results is not None and 'anomalies' in detection_results:
                 total_points = len(detection_results['anomalies'])
                 anomaly_count = sum(detection_results['anomalies'])
-                anomaly_rate = (anomaly_count / total_points) * 100
+                anomaly_rate = (anomaly_count / total_points) * 100 if total_points > 0 else 0
                 st.metric("检测点数", total_points)
                 st.metric("异常点数", anomaly_count)
                 st.metric("异常率", f"{anomaly_rate:.2f}%")
