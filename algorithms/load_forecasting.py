@@ -63,6 +63,7 @@ class LoadForecaster:
         # 标准化
         scaler = StandardScaler()
         X_scaled = scaler.fit_transform(X)
+        self.scaler = scaler
         
         # 训练模型
         self.model.fit(X_scaled, y)
@@ -79,6 +80,7 @@ class LoadForecaster:
         # 标准化
         scaler = StandardScaler()
         X_scaled = scaler.fit_transform(X)
+        self.scaler = scaler
         
         # 训练模型
         model = xgb.XGBRegressor(n_estimators=100, random_state=42)
@@ -101,6 +103,7 @@ class LoadForecaster:
         
         scaler = StandardScaler()
         X_scaled = scaler.fit_transform(X)
+        self.scaler = scaler
         
         model = MLPRegressor(hidden_layer_sizes=(50, 25), max_iter=500, random_state=42)
         model.fit(X_scaled, y)
@@ -170,7 +173,7 @@ class LoadForecaster:
                 future_features['hour_cos'] = np.cos(2 * np.pi * future_hour / 24)
                 
                 # 预测
-                X_scaled = scaler.transform(future_features)
+                X_scaled = self.scaler.transform(future_features)
                 pred = model.predict(X_scaled)[0]
                 predicted_load.append(max(0, min(100, pred)))
                 
