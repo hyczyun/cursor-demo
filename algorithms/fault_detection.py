@@ -197,6 +197,10 @@ class FaultDetector:
         """异常检测算法检测"""
         X = df[feature_columns]
         
+        # 初始化变量
+        predictions = None
+        anomaly_scores = None
+        
         if algorithm == "隔离森林":
             # 隔离森林返回-1表示异常，1表示正常
             model = self.scalers[algorithm_key]
@@ -212,6 +216,10 @@ class FaultDetector:
             # SVM返回-1表示异常，1表示正常
             predictions = model.predict(X_scaled)
             anomaly_scores = model.decision_function(X_scaled)
+        else:
+            # 默认情况：返回空结果
+            predictions = np.ones(len(X))  # 全部标记为正常
+            anomaly_scores = np.zeros(len(X))  # 异常分数为0
         
         faults = []
         for idx, (pred, score) in enumerate(zip(predictions, anomaly_scores)):
