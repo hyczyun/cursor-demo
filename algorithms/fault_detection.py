@@ -64,10 +64,20 @@ class FaultDetector:
         
         return df, feature_columns
     
-    def train(self, X):
+    def train(self, data):
+        """训练隔离森林模型"""
+        df, feature_columns = self.prepare_features(data)
+        X = df[feature_columns]
+        # 确保数据类型为数值型
+        X = X.astype(float)
         self.model.fit(X)
 
-    def detect(self, X):
+    def detect(self, data):
+        """使用隔离森林模型进行检测"""
+        df, feature_columns = self.prepare_features(data)
+        X = df[feature_columns]
+        # 确保数据类型为数值型
+        X = X.astype(float)
         return self.model.predict(X)
     
     def train_one_class_svm(self, data):
