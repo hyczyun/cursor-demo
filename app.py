@@ -371,20 +371,14 @@ class HVACDemoPlatform:
             # 运行优化
             if st.button("运行能耗优化"):
                 with st.spinner("正在优化..."):
-                    # 模拟优化过程
                     progress_bar = st.progress(0)
                     for i in range(100):
                         time.sleep(0.02)
                         progress_bar.progress(i + 1)
-                    
-                    # 获取优化结果
+                    # 只传 data 参数
                     optimization_results = self.energy_optimizer.optimize(
-                        algorithm=optimization_algorithm,
-                        energy_weight=energy_weight,
-                        comfort_weight=comfort_weight,
-                        cost_weight=cost_weight
+                        self.data_generator.generate_historical_data(hours=24)
                     )
-                    
                     st.success("优化完成！")
                     
                     # 显示优化结果
