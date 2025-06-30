@@ -19,7 +19,8 @@ class HVACDataGenerator:
             'maintenance_status': np.random.choice(['正常', '需维护']),
             'ambient_temp': np.random.uniform(10, 35),
             'air_quality': np.random.choice(['优', '良', '一般']),
-            'compressor_frequency': np.random.uniform(30, 70)
+            'compressor_frequency': np.random.uniform(30, 70),
+            'water_flow': np.random.uniform(20, 100)
         }
     
     def generate_historical_data(self, hours=24):
