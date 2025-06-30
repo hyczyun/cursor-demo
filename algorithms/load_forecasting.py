@@ -124,16 +124,15 @@ class LoadForecaster:
     
     def predict(self, algorithm, data, hours=24):
         """进行预测"""
-        if algorithm not in self.model:
-            # 训练模型
-            if algorithm == "LSTM神经网络":
-                self.train_lstm_simulation(data)
-            elif algorithm == "XGBoost":
-                self.train_xgboost(data)
-            elif algorithm == "随机森林":
-                self.train_random_forest(data)
-            elif algorithm == "时间序列ARIMA":
-                self.train_arima(data)
+        # 直接根据 algorithm 判断并训练模型
+        if algorithm == "LSTM神经网络":
+            self.train_lstm_simulation(data)
+        elif algorithm == "XGBoost":
+            self.train_xgboost(data)
+        elif algorithm == "随机森林":
+            self.train_random_forest(data)
+        elif algorithm == "时间序列ARIMA":
+            self.train_arima(data)
         
         # 生成预测时间
         last_timestamp = data['timestamp'].iloc[-1]
