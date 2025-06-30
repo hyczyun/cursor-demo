@@ -160,6 +160,7 @@ class LoadForecaster:
             
             predicted_load = []
             for i in range(hours):
+                import numpy as np  # 再次确保 np 可用
                 # 更新特征
                 future_hour = (last_timestamp + timedelta(hours=i+1)).hour
                 future_day = (last_timestamp + timedelta(hours=i+1)).day
