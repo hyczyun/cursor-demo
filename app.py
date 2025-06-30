@@ -452,52 +452,75 @@ class HVACDemoPlatform:
                     for i in range(100):
                         time.sleep(0.01)
                         progress_bar.progress(i + 1)
-                    detection_results = self.fault_detector.detect(
+                    detection_results = self.fault_detector.detect_faults(
                         algorithm=detection_algorithm,
                         data=detection_data
                     )
                     st.success("检测完成！")
+                    
                     # 显示检测结果
-                    fig = make_subplots(
-                        rows=2, cols=1,
-                        subplot_titles=('传感器数据', '异常检测结果'),
-                        vertical_spacing=0.1
-                    )
-                    fig.add_trace(
-                        go.Scatter(
-                            x=detection_data['timestamp'],
-                            y=detection_data['temperature'],
-                            mode='lines',
-                            name='温度',
-                            line=dict(color='blue')
-                        ),
-                        row=1, col=1
-                    )
-                    fig.add_trace(
-                        go.Scatter(
-                            x=detection_data['timestamp'],
-                            y=detection_data['pressure'],
-                            mode='lines',
-                            name='压力',
-                            line=dict(color='red'),
-                            yaxis='y2'
-                        ),
-                        row=1, col=1
-                    )
-                    colors = ['green' if not anomaly else 'red' 
-                             for anomaly in detection_results['anomalies']]
-                    fig.add_trace(
-                        go.Scatter(
-                            x=detection_data['timestamp'],
-                            y=detection_results['scores'],
-                            mode='markers',
-                            name='异常分数',
-                            marker=dict(color=colors, size=8)
-                        ),
-                        row=2, col=1
-                    )
-                    fig.update_layout(height=600)
-                    st.plotly_chart(fig, use_container_width=True)
+                    if detection_results:
+                        # 创建异常标记数组
+                        anomalies = [False] * len(detection_data)
+                        scores = [0.0] * len(detection_data)
+                        
+                        # 根据检测结果标记异常
+                        for fault in detection_results:
+                            if 'timestamp' in fault:
+                                # 找到对应的时间戳索引
+                                for i, ts in enumerate(detection_data['timestamp']):
+                                    if ts == fault['timestamp']:
+                                        anomalies[i] = True
+                                        scores[i] = fault.get('confidence', 0.8)
+                                        break
+                        
+                        fig = make_subplots(
+                            rows=2, cols=1,
+                            subplot_titles=('传感器数据', '异常检测结果'),
+                            vertical_spacing=0.1
+                        )
+                        fig.add_trace(
+                            go.Scatter(
+                                x=detection_data['timestamp'],
+                                y=detection_data['temperature'],
+                                mode='lines',
+                                name='温度',
+                                line=dict(color='blue')
+                            ),
+                            row=1, col=1
+                        )
+                        fig.add_trace(
+                            go.Scatter(
+                                x=detection_data['timestamp'],
+                                y=detection_data['pressure'],
+                                mode='lines',
+                                name='压力',
+                                line=dict(color='red'),
+                                yaxis='y2'
+                            ),
+                            row=1, col=1
+                        )
+                        colors = ['green' if not anomaly else 'red' 
+                                 for anomaly in anomalies]
+                        fig.add_trace(
+                            go.Scatter(
+                                x=detection_data['timestamp'],
+                                y=scores,
+                                mode='markers',
+                                name='异常分数',
+                                marker=dict(color=colors, size=8)
+                            ),
+                            row=2, col=1
+                        )
+                        fig.update_layout(height=600)
+                        st.plotly_chart(fig, use_container_width=True)
+                        
+                        # 更新检测结果变量
+                        detection_results = {
+                            'anomalies': anomalies,
+                            'scores': scores,
+                            'faults': detection_results
+                        }
         with col2:
             st.subheader("检测结果")
             if detection_results is not None:
