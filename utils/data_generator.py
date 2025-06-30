@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 from datetime import datetime, timedelta
+import random
 
 class HVACDataGenerator:
     """HVAC系统数据生成器"""
