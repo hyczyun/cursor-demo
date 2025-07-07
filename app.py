@@ -202,7 +202,7 @@ class HVACDemoPlatform:
             row=1, col=1
         )
         fig.add_hline(y=self.target_temp, line_dash="dash", line_color="blue",
-                     annotation_text="目标温度", row=1, col=1)
+                     annotation_text="目标温度")
         
         # 负荷图表
         fig.add_trace(
@@ -618,8 +618,7 @@ class HVACDemoPlatform:
                         y=self.target_temp,
                         line_dash="dash",
                         line_color="blue",
-                        annotation_text="目标温度",
-                        row=1, col=1
+                        annotation_text="目标温度"
                     )
                     
                     # 控制信号
